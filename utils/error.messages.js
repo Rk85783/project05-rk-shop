@@ -5,5 +5,6 @@ export default {
   INVALID_CREDENTIALS: "Invalid username or password.",
   INTERNAL_SERVER_ERROR: "An internal server error occurred. Please try again later.",
   TOKEN_EXPIRED: "Access token is expired",
-  INVALID_TOKEN: "Access token is invalid"
+  INVALID_TOKEN: "Access token is invalid",
+  VALIDATION_FAILED: 'Validation failed for given parameters'
 };
