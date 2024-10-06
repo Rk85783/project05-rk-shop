@@ -1,0 +1,21 @@
+{
+  "name": "project05-rk-shop",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "Express JS",
+    "MongoDB"
+  ],
+  "author": "Rohit Kumar mahor",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}
