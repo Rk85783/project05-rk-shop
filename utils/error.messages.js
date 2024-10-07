@@ -6,5 +6,6 @@ export default {
   INTERNAL_SERVER_ERROR: "An internal server error occurred. Please try again later.",
   TOKEN_EXPIRED: "Access token is expired",
   INVALID_TOKEN: "Access token is invalid",
-  VALIDATION_FAILED: 'Validation failed for given parameters'
+  VALIDATION_FAILED: "Validation failed for given parameters",
+  PRODUCT_NOT_FOUND: "Product not found"
 };

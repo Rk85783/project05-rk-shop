@@ -14,11 +14,11 @@ router.get("/", (req, res) => {
 router.post("/login", login);
 router.post("/register", register);
 
-// Product Routes 
+// Product Routes
 router.post("/product", checkToken, addProduct);
 router.get("/product", checkToken, listProduct);
-router.get("/product/:id", checkToken, viewProduct);
-router.put("/product/:id", checkToken, editProduct);
-router.delete("/product/:id", checkToken, deleteProduct);
+router.get("/product/:productId", checkToken, viewProduct);
+router.put("/product/:productId", checkToken, editProduct);
+router.delete("/product/:productId", checkToken, deleteProduct);
 
 export default router;
