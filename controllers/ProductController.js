@@ -13,31 +13,36 @@ import mongoose from "mongoose";
 export const addProduct = async (req, res) => {
   console.info("addProduct(): req.body:", req.body);
 
-  const productSchema = Joi.object().keys({
+  // Define the schema for validation
+  const productSchema = Joi.object({
     productName: Joi.string().required(),
     productCode: Joi.string().required(),
     productColor: Joi.string().required(),
-    productDescription: Joi.string().allow(null),
+    productDescription: Joi.string().allow(null, ''), // Allow null or empty string
     productPrice: Joi.number().integer().required(),
-    productImage: Joi.string().required()
+    productImage: Joi.object({
+      public_id: Joi.string().required(),
+      secure_url: Joi.string().uri().required()
+    }).required()
   });
-  const { error } = productSchema.validate(req.body, { convert: true, abortEarly: false });
+
+  // Validate the request body
+  const { error } = productSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
-    console.error("addProduct(): validation error: ", errorMessages.VALIDATION_FAILED);
-
     const validationErrors = error.details.map(({ path, message }) => ({
       field: path.join("."),
-      message: formatMessage(message.replace(/"/g, ""))
+      message: message.replace(/"/g, "")
     }));
 
-    return res.status(200).json({
+    return res.status(400).json({
       success: false,
       message: errorMessages.VALIDATION_FAILED,
       error: validationErrors
     });
   }
 
+  // Prepare the create values
   const createValues = {
     name: req.body.productName,
     code: req.body.productCode,
@@ -46,18 +51,20 @@ export const addProduct = async (req, res) => {
     price: req.body.productPrice,
     image: req.body.productImage
   };
-  ProductModel.create(createValues).then(result => {
-    res.status(200).json({
+
+  try {
+    await ProductModel.create(createValues);
+    return res.status(201).json({
       success: true,
       message: "Product successfully added"
     });
-  }).catch(err => {
-    console.error("addProduct(): ProductModel.create(): error : ", err);
-    res.status(500).json({
+  } catch (err) {
+    console.error("addProduct(): ProductModel.create(): error:", err);
+    return res.status(500).json({
       success: false,
       message: errorMessages.INTERNAL_SERVER_ERROR
     });
-  });
+  }
 };
 
 /**
@@ -190,9 +197,12 @@ export const editProduct = async (req, res) => {
     productName: Joi.string().required(),
     productCode: Joi.string().required(),
     productColor: Joi.string().required(),
-    productDescription: Joi.string().allow(null),
+    productDescription: Joi.string().allow(null, ''), // Allow null or empty string
     productPrice: Joi.number().integer().required(),
-    productImage: Joi.string().allow(null)
+    productImage: Joi.object({
+      public_id: Joi.string().required(),
+      secure_url: Joi.string().uri().required()
+    }).required()
   });
 
   // Validate request params

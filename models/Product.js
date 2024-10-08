@@ -22,7 +22,12 @@ const ProductSchema = new Schema({
     required: [true, "Price is required"]
   },
   image: {
-    type: String
+    public_id: {
+      type: String
+    },
+    secure_url: {
+      type: String
+    }
   },
   createdAt: {
     type: Date,
