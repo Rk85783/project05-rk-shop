@@ -4,30 +4,35 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema({
   name: {
     type: String,
-    required: [true, "Name is required"]
+    required: [true, "Product Name is required"]
   },
   code: {
     type: String,
-    required: [true, "Code is required"]
+    required: [true, "Product Code is required"]
   },
   color: {
     type: String,
-    required: [true, "Color is required"]
+    required: [true, "Product Color is required"]
   },
   description: {
     type: String
   },
   price: {
     type: Number,
-    required: [true, "Price is required"]
+    required: [true, "Product Price is required"]
   },
   image: {
-    public_id: {
+    publicId: {
       type: String
     },
-    secure_url: {
+    secureUrl: {
       type: String
     }
+  },
+  categoryId: {
+    type: Schema.Types.ObjectId,
+    ref: "Category",
+    required: true
   },
   createdAt: {
     type: Date,

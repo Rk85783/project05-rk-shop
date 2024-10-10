@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import errorMessages from "../utils/error.messages.js";
+import { errorMessages } from "../utils/messages.js";
 
 const checkToken = async (req, res, next) => {
   try {

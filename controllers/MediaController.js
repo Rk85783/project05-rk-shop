@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from "fs";
 import { mediaUpload } from "../services/media.service.js";
-import errorMessages from "../utils/error.messages.js";
+import { errorMessages } from "../utils/messages.js";
 
 export const mediaAdd = async (req, res) => {
   try {

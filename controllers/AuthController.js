@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import errorMessages from "../utils/error.messages.js";
 import UserModel from "../models/User.js";
+import { successMessages, errorMessages } from "../utils/messages.js";
 
 export const login = async (req, res) => {
   try {
@@ -17,7 +17,6 @@ export const login = async (req, res) => {
 
     // Authenticate user
     const existUser = await UserModel.findOne({ email });
-    console.log(existUser, "existUser");
 
     const isValidPassword = await bcrypt.compare(password, existUser.password);
     if (!existUser || !isValidPassword) {
@@ -37,7 +36,7 @@ export const login = async (req, res) => {
     // Login successful, return user data
     res.status(200).json({
       success: true,
-      message: "Logged successfully",
+      message: successMessages.LOGIN_SUCCESS,
       data: {
         name: existUser.name,
         email: existUser.email,
@@ -45,7 +44,7 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging purposes
+    console.error("login(): catch(): error: ", error);
     res.status(500).json({
       success: false,
       message: errorMessages.INTERNAL_SERVER_ERROR
@@ -80,10 +79,10 @@ export const register = async (req, res) => {
     });
     res.status(200).json({
       success: true,
-      message: "Registration successfully"
+      message: successMessages.REGISTRATION_SUCCESS
     });
   } catch (error) {
-    console.error("register(): Error : ", error);
+    console.error("register(): catch(): error : ", error);
     res.status(500).json({
       success: false,
       message: errorMessages.INTERNAL_SERVER_ERROR

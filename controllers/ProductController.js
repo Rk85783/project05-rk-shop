@@ -1,8 +1,8 @@
 import Joi from "joi";
-import errorMessages from "../utils/error.messages.js";
 import { formatMessage } from "../utils/common.js";
 import ProductModel from "../models/Product.js";
 import mongoose from "mongoose";
+import { successMessages, errorMessages } from "../utils/messages.js";
 
 /**
  * This function creating a new product.
@@ -18,12 +18,15 @@ export const addProduct = async (req, res) => {
     productName: Joi.string().required(),
     productCode: Joi.string().required(),
     productColor: Joi.string().required(),
-    productDescription: Joi.string().allow(null, ''), // Allow null or empty string
+    productDescription: Joi.string().allow(null, ""), // Allow null or empty string
     productPrice: Joi.number().integer().required(),
     productImage: Joi.object({
-      public_id: Joi.string().required(),
-      secure_url: Joi.string().uri().required()
-    }).required()
+      publicId: Joi.string().required(),
+      secureUrl: Joi.string().uri().required()
+    }).required(),
+    categoryId: Joi.string().custom((value, helpers) =>
+      mongoose.Types.ObjectId.isValid(value) ? value : helpers.error("any.invalid"), "ObjectId validation"
+    ).required()
   });
 
   // Validate the request body
@@ -49,14 +52,15 @@ export const addProduct = async (req, res) => {
     color: req.body.productColor,
     description: req.body.productDescription || "",
     price: req.body.productPrice,
-    image: req.body.productImage
+    image: req.body.productImage,
+    categoryId: req.body.categoryId
   };
 
   try {
     await ProductModel.create(createValues);
     return res.status(201).json({
       success: true,
-      message: "Product successfully added"
+      message: successMessages.PRODUCT_ADDED
     });
   } catch (err) {
     console.error("addProduct(): ProductModel.create(): error:", err);
@@ -103,16 +107,24 @@ export const listProduct = async (req, res) => {
     // Execute both database calls in parallel
     const [products, productsCount] = await Promise.all([
       ProductModel.find()
+        .populate('categoryId')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),
       ProductModel.countDocuments()
     ]);
 
+    // Map to rename categoryId to category
+    const formattedProducts = products.map(product => ({
+      ...product._doc,
+      category: product.categoryId,
+      categoryId: undefined
+    }));
+
     res.status(200).json({
       success: true,
-      message: "Products found",
-      data: products,
+      message: successMessages.PRODUCT_FOUND,
+      data: formattedProducts,
       totalCount: productsCount,
       page,
       limit
@@ -125,6 +137,7 @@ export const listProduct = async (req, res) => {
     });
   }
 };
+
 
 /**
  * This function returns all products with pagination.
@@ -160,7 +173,7 @@ export const viewProduct = async (req, res) => {
   // ---------- Validation Code : End
 
   try {
-    const product = await ProductModel.findById(req.params.productId);
+    const product = await ProductModel.findById(req.params.productId).populate('categoryId');
     if (!product) {
       console.error("viewProduct(): ProductModel.findById(): error : ", errorMessages.PRODUCT_NOT_FOUND);
       return res.status(400).json({
@@ -168,10 +181,18 @@ export const viewProduct = async (req, res) => {
         message: errorMessages.PRODUCT_NOT_FOUND
       });
     }
+
+    // Map to rename categoryId to category
+    const formattedProduct = {
+      ...product._doc,
+      category: product.categoryId,
+      categoryId: undefined
+    };
+
     res.status(200).json({
       success: true,
-      message: "Product found",
-      data: product
+      message: successMessages.PRODUCT_FOUND,
+      data: formattedProduct
     });
   } catch (err) {
     console.error("viewProduct(): catch(): error : ", err);
@@ -197,12 +218,15 @@ export const editProduct = async (req, res) => {
     productName: Joi.string().required(),
     productCode: Joi.string().required(),
     productColor: Joi.string().required(),
-    productDescription: Joi.string().allow(null, ''), // Allow null or empty string
+    productDescription: Joi.string().allow(null, ""), // Allow null or empty string
     productPrice: Joi.number().integer().required(),
     productImage: Joi.object({
       public_id: Joi.string().required(),
       secure_url: Joi.string().uri().required()
-    }).required()
+    }).required(),
+    categoryId: Joi.string().custom((value, helpers) =>
+      mongoose.Types.ObjectId.isValid(value) ? value : helpers.error("any.invalid"), "ObjectId validation"
+    ).required()
   });
 
   // Validate request params
@@ -213,7 +237,8 @@ export const editProduct = async (req, res) => {
     productColor: req.body.productColor,
     productDescription: req.body.productDescription,
     productPrice: req.body.productPrice,
-    productImage: req.body.productImage
+    productImage: req.body.productImage,
+    categoryId: req.body.categoryId
   }, { convert: true, abortEarly: false });
 
   if (error) {
@@ -240,7 +265,8 @@ export const editProduct = async (req, res) => {
       color: req.body.productColor,
       description: req.body.productDescription || "",
       price: req.body.productPrice,
-      image: req.body.productImage
+      image: req.body.productImage,
+      categoryId: req.body.categoryId
     });
     if (!updatedProduct) {
       console.error("editProduct(): ProductModel.findByIdAndUpdate(): error : ", errorMessages.PRODUCT_NOT_FOUND);
@@ -251,7 +277,7 @@ export const editProduct = async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      message: "Product updated successfully"
+      message: successMessages.PRODUCT_UPDATED
     });
   } catch (error) {
     console.error("editProduct(): catch(): error : ", error);
@@ -309,7 +335,7 @@ export const deleteProduct = async (req, res) => {
     }
     res.status(200).json({
       success: true,
-      message: "Product deleted successfully"
+      message: successMessages.PRODUCT_DELETED
     });
   } catch (error) {
     console.error("deleteProduct(): catch error: ", error);
